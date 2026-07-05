@@ -1,4 +1,6 @@
-package org.firstinspires.ftc.teamcode.Motor;
+package org.firstinspires.ftc.teamcode.Motor.Config;
+
+import org.firstinspires.ftc.teamcode.Motor.DcMotorConstants;
 
 public enum motorTypes {
 

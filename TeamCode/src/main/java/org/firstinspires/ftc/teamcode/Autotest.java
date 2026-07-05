@@ -1,4 +1,29 @@
 package org.firstinspires.ftc.teamcode;
 
-public class Autotest {
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+
+import org.firstinspires.ftc.teamcode.Subsystem.Intake;
+import org.firstinspires.ftc.teamcode.Subsystem.driveTrain;
+
+public class Autotest extends LinearOpMode {
+    driveTrain driveTrain = new driveTrain();
+    Intake intake = new Intake();
+
+    @Override
+    public void runOpMode() throws InterruptedException {
+        driveTrain.init(hardwareMap);
+        intake.init(hardwareMap);
+
+        waitForStart();
+
+        driveTrain.driveTo(12, Math.toRadians(90), 1, this);
+        intake.setState(Intake.intakeState.INTAKE);
+        driveTrain.driveTo(-12, Math.toRadians(-90), 1, this);
+        intake.setState(Intake.intakeState.STOP);
+        driveTrain.turnTo(Math.toRadians(90), 1.0, this);
+
+        while (opModeIsActive()) {
+            driveTrain.update();
+        }
+    }
 }

@@ -1,11 +1,11 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.FTCLib;
 
 import com.arcrobotics.ftclib.command.CommandOpMode;
 import com.arcrobotics.ftclib.command.InstantCommand;
 import com.arcrobotics.ftclib.command.button.GamepadButton;
 import com.arcrobotics.ftclib.command.button.Trigger;
 import com.arcrobotics.ftclib.drivebase.DifferentialDrive;
-import com.arcrobotics.ftclib.gamepad.GamepadEx;    
+import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -16,13 +16,16 @@ import org.firstinspires.ftc.teamcode.Subsystem.driveTrain;
 
 @TeleOp(group = "FTCLib")
 public class FTCLib_TELEOP extends CommandOpMode {
-    DifferentialDrive drive;
-    driveTrain driveTrain = new driveTrain();
-    Intake intake = new Intake();
-    GamepadEx gamepadEx1;
+    private DifferentialDrive drive;
+    private driveTrain driveTrain = new driveTrain();
+    private Intake intake = new Intake();
+    private GamepadEx gamepadEx1;
+
 
     @Override
     public void initialize() {
+        super.reset();
+
         driveTrain.init(hardwareMap);
         intake.init(hardwareMap);
         gamepadEx1 = new GamepadEx(gamepad1);
@@ -49,7 +52,9 @@ public class FTCLib_TELEOP extends CommandOpMode {
         super.run();
         driveTrain.update();
         intake.update();
-
         drive.arcadeDrive(-gamepad1.left_stick_y, gamepad1.right_stick_x, true);
+
+        telemetry.addData("Current Intake State", intake.getCurrentState());
+        telemetry.update();
     }
 }
