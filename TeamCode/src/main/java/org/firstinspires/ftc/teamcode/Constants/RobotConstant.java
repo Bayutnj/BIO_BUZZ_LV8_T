@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.Motor.Config.motorLimit;
+import org.firstinspires.ftc.teamcode.Motor.DriveTrainType;
 import org.firstinspires.ftc.teamcode.Motor.Localizer;
 import org.firstinspires.ftc.teamcode.Motor.Config.motorTypes;
 
@@ -20,16 +21,26 @@ public final class RobotConstant {
     public static final Pose2D STARTING_POSE = alliance.getPose();
 
 //    DRIVETRAIN
+    public static final DriveTrainType DRIVE_TRAIN_TYPE = DriveTrainType.TANK_DRIVE;
     public static final String LEFT_MOTOR = "leftMotor";
     public static final String RIGHT_MOTOR = "rightMotor";
+    public static final String FRONT_LEFT_MOTOR = "frontLeftMotor";
+    public static final String FRONT_RIGHT_MOTOR = "frontRightMotor";
     public static final motorTypes DRIVE_TRAIN_MOTOR = motorTypes.CORE_HEX;
     public static final DcMotorSimple.Direction LEFT_DIRECTION =
             DcMotorSimple.Direction.REVERSE;
     public static final DcMotorSimple.Direction RIGHT_DIRECTION =
             DcMotorSimple.Direction.FORWARD;
+
+    public static final DcMotorSimple.Direction FRONT_RIGHT_DIRECTION =
+            DcMotorSimple.Direction.FORWARD;
+    public static final DcMotorSimple.Direction FRONT_LEFT_DIRECTION =
+            DcMotorSimple.Direction.REVERSE;
+
     public static final DcMotor.ZeroPowerBehavior DRIVETRAIN_BEHAVIOR =
             DcMotor.ZeroPowerBehavior.BRAKE;
     public static final motorLimit DRIVETRAIN_LIMIT = motorLimit.defaults();
+
 //    DRIVE ENCODER
     public static final DcMotor.RunMode DRIVETRAIN_MODE = DcMotor.RunMode.RUN_WITHOUT_ENCODER;
 
@@ -53,7 +64,7 @@ public final class RobotConstant {
             DcMotor.ZeroPowerBehavior.FLOAT;
     public static final DcMotor.RunMode INTAKE_MODE = DcMotor.RunMode.RUN_WITHOUT_ENCODER;
 
-    public static final motorLimit INTAKE_LIMIT = new motorLimit(1.0, 6.0);
+    public static final motorLimit INTAKE_LIMIT = new motorLimit(1.0, 4.0);
 
 //    IMU
     public static final String IMU_NAME = "IMU";

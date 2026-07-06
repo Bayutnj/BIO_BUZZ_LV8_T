@@ -23,7 +23,7 @@ public class Autotest extends LinearOpMode {
         driveTrain.turnTo(Math.toRadians(90), 1.0, this);
 
         while (opModeIsActive()) {
-            driveTrain.update();
+            driveTrain.periodic();
         }
     }
 }

@@ -5,8 +5,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 
 public enum Alliance {
-    BLUE(20, new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.RADIANS, RobotConstant.STARTING_HEADING)),
-    RED(24, new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.RADIANS, RobotConstant.STARTING_HEADING));
+    BLUE(20, new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.RADIANS, Math.toRadians(0))),
+    RED(24, new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.RADIANS, Math.toRadians(0)));
 
     private final int id;
     private final Pose2D pose;

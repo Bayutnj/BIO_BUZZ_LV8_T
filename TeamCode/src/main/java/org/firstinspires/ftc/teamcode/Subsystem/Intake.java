@@ -1,11 +1,12 @@
 package org.firstinspires.ftc.teamcode.Subsystem;
 
+import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.Constants.RobotConstant;
 import org.firstinspires.ftc.teamcode.Motor.motorInitialize;
 
-public class Intake {
+public class Intake extends SubsystemBase {
     motorInitialize intake;
     HardwareMap hwMap;
     private boolean isBusy = false;
@@ -29,7 +30,8 @@ public class Intake {
         );
     }
 
-    public void update() {
+    @Override
+    public void periodic() {
         switch (currentState) {
             case INTAKE:
                 intake.setPower(1.0);
@@ -44,10 +46,14 @@ public class Intake {
                 break;
 
             case STOP:
+            default:
                 intake.setPower(0);
-
                 isBusy = false;
                 break;
+        }
+
+        if (currentState == intakeState.INTAKE && intake.getMotor().isOverCurrent()) {
+            setState(intakeState.STOP);
         }
     }
 

@@ -2,7 +2,9 @@ package org.firstinspires.ftc.teamcode.Subsystem;
 
 
 import com.arcrobotics.ftclib.command.SubsystemBase;
-import com.arcrobotics.ftclib.hardware.motors.Motor;
+import com.arcrobotics.ftclib.drivebase.DifferentialDrive;
+import com.arcrobotics.ftclib.drivebase.MecanumDrive;
+import com.arcrobotics.ftclib.drivebase.RobotDrive;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -12,14 +14,17 @@ import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.Constants.Alliance;
 import org.firstinspires.ftc.teamcode.Constants.PIDFCoefficients;
 import org.firstinspires.ftc.teamcode.Constants.RobotConstant;
+import org.firstinspires.ftc.teamcode.Motor.DriveTrainType;
 import org.firstinspires.ftc.teamcode.Motor.Localizer;
 import org.firstinspires.ftc.teamcode.Motor.motorInitialize;
 
-public class driveTrain {
+public class driveTrain extends SubsystemBase {
+
+    private DriveTrainType driveTrainType;
     private motorInitialize lm, rm;
+    private motorInitialize frm, flm;
     private final Localizer localizerType = RobotConstant.localizer;
     private GoBildaPinpointDriver odo;
     private IMU imu;
@@ -30,13 +35,32 @@ public class driveTrain {
     private double lastlT, lastrT;
 
     public void init(HardwareMap hwMap) {
-        lm = new motorInitialize(hwMap, RobotConstant.LEFT_MOTOR, RobotConstant.LEFT_DIRECTION
-                , RobotConstant.DRIVETRAIN_BEHAVIOR, RobotConstant.DRIVETRAIN_MODE,
-                RobotConstant.DRIVE_TRAIN_MOTOR, RobotConstant.DRIVETRAIN_LIMIT);
+        driveTrainType = RobotConstant.DRIVE_TRAIN_TYPE;
 
-        rm = new motorInitialize(hwMap, RobotConstant.RIGHT_MOTOR, RobotConstant.RIGHT_DIRECTION
-                , RobotConstant.DRIVETRAIN_BEHAVIOR, RobotConstant.DRIVETRAIN_MODE,
-                RobotConstant.DRIVE_TRAIN_MOTOR, RobotConstant.DRIVETRAIN_LIMIT);
+        if (driveTrainType == DriveTrainType.TANK_DRIVE) {
+            lm = new motorInitialize(hwMap, RobotConstant.LEFT_MOTOR, RobotConstant.LEFT_DIRECTION
+                    , RobotConstant.DRIVETRAIN_BEHAVIOR, RobotConstant.DRIVETRAIN_MODE,
+                    RobotConstant.DRIVE_TRAIN_MOTOR, RobotConstant.DRIVETRAIN_LIMIT);
+
+            rm = new motorInitialize(hwMap, RobotConstant.RIGHT_MOTOR, RobotConstant.RIGHT_DIRECTION
+                    , RobotConstant.DRIVETRAIN_BEHAVIOR, RobotConstant.DRIVETRAIN_MODE,
+                    RobotConstant.DRIVE_TRAIN_MOTOR, RobotConstant.DRIVETRAIN_LIMIT);
+        } else {
+            lm = new motorInitialize(hwMap, RobotConstant.LEFT_MOTOR, RobotConstant.LEFT_DIRECTION
+                    , RobotConstant.DRIVETRAIN_BEHAVIOR, RobotConstant.DRIVETRAIN_MODE,
+                    RobotConstant.DRIVE_TRAIN_MOTOR, RobotConstant.DRIVETRAIN_LIMIT);
+
+            rm = new motorInitialize(hwMap, RobotConstant.RIGHT_MOTOR, RobotConstant.RIGHT_DIRECTION
+                    , RobotConstant.DRIVETRAIN_BEHAVIOR, RobotConstant.DRIVETRAIN_MODE,
+                    RobotConstant.DRIVE_TRAIN_MOTOR, RobotConstant.DRIVETRAIN_LIMIT);
+
+            frm = new motorInitialize(hwMap, RobotConstant.FRONT_RIGHT_MOTOR, RobotConstant.FRONT_RIGHT_DIRECTION
+                    , RobotConstant.DRIVETRAIN_BEHAVIOR, RobotConstant.DRIVETRAIN_MODE,
+                    RobotConstant.DRIVE_TRAIN_MOTOR, RobotConstant.DRIVETRAIN_LIMIT);
+            flm = new motorInitialize(hwMap, RobotConstant.FRONT_LEFT_MOTOR, RobotConstant.FRONT_LEFT_DIRECTION
+                    , RobotConstant.DRIVETRAIN_BEHAVIOR, RobotConstant.DRIVETRAIN_MODE,
+                    RobotConstant.DRIVE_TRAIN_MOTOR, RobotConstant.DRIVETRAIN_LIMIT);
+        }
 
         if (localizerType == Localizer.PINPOINT) {
             odo = hwMap.get(GoBildaPinpointDriver.class, RobotConstant.localizerName);
@@ -62,8 +86,14 @@ public class driveTrain {
         PIDFCoefficients.drivePIDF.setTolerance(Math.toRadians(1));
     }
 
-    public void update() {
-        overVoltage = lm.getMotor().isOverCurrent() || rm.getMotor().isOverCurrent();
+    @Override
+    public void periodic() {
+        if (driveTrainType == DriveTrainType.TANK_DRIVE) {
+            overVoltage = lm.getMotor().isOverCurrent() || rm.getMotor().isOverCurrent();
+        } else {
+            overVoltage = lm.getMotor().isOverCurrent() || rm.getMotor().isOverCurrent()
+                    || flm.getMotor().isOverCurrent() || frm.getMotor().isOverCurrent();
+        }
 
         if (localizerType == Localizer.PINPOINT) {
             odo.update();
@@ -101,12 +131,58 @@ public class driveTrain {
         return (localizerType == Localizer.PINPOINT) ? odo.getPosY(DistanceUnit.INCH) : poseY;
     }
 
-    public void manualDrive(double forward, double rotate) {
+    public void ArcadeDrive(double forward, double rotate) {
+        if (overVoltage) {
+            lm.setPower(0);
+            rm.setPower(0);
+            return;
+        }
+
         double leftPower = forward - rotate;
         double rightPower = forward + rotate;
 
         lm.setPower(leftPower);
         rm.setPower(rightPower);
+    }
+
+    public void fieldCentricMecanum(double forward, double lateral, double rx) {
+        if (overVoltage) {
+            flm.setPower(0);
+            frm.setPower(0);
+            lm.setPower(0);
+            rm.setPower(0);
+            return;
+        }
+
+        double cosGyro = Math.cos(getPoseHeading());
+        double sinGyro = Math.sin(getPoseHeading());
+
+        double forwardFc = forward * cosGyro - lateral * sinGyro;
+        double lateralFc = forward * sinGyro + lateral * cosGyro;
+        lateralFc *= 1.1;
+
+        robotCentricMecanum(forwardFc, lateralFc, rx);
+    }
+
+    public void robotCentricMecanum(double forward, double lateral, double rx) {
+        if (overVoltage) {
+            flm.setPower(0);
+            frm.setPower(0);
+            lm.setPower(0);
+            rm.setPower(0);
+            return;
+        }
+
+        double flPower = forward + lateral + rx;
+        double frPower = forward - lateral - rx;
+        double blPower = forward - lateral + rx;
+        double brPower = forward + lateral - rx;
+
+        double max = Math.max(1.0, Math.max(Math.abs(flPower), Math.max(Math.abs(frPower), Math.max(Math.abs(blPower), Math.abs(brPower)))));
+        flm.setPower(flPower / max);
+        frm.setPower(frPower / max);
+        lm.setPower(blPower / max);
+        rm.setPower(brPower / max);
     }
 
     public void driveTo(double targetInch, double headingConsidered, double maxPower, LinearOpMode opMode) {
@@ -117,7 +193,7 @@ public class driveTrain {
         PIDFCoefficients.drivePIDF.reset();
 
         while (opMode.opModeIsActive()) {
-            update();
+            periodic();
 
             if (overVoltage) {
                 lm.setPower(0);
@@ -146,7 +222,7 @@ public class driveTrain {
         PIDFCoefficients.turnPIDF.reset();
 
         while (opMode.opModeIsActive()) {
-            update();
+            periodic();
 
             if (overVoltage) {
                 lm.setPower(0);
