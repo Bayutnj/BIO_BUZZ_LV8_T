@@ -16,12 +16,24 @@ public final class RobotConstant {
     private RobotConstant() {
     }
 
+    public static final double robotWidth = 14.0; // INCH
+    public static final double robotLength = 16.0; // INCH
+
     public static final Alliance alliance = Alliance.BLUE;
     public static final double STARTING_HEADING = Math.toRadians(90);
     public static final Pose2D STARTING_POSE = alliance.getPose();
 
 //    DRIVETRAIN
+    public static final DcMotor.RunMode DRIVETRAIN_MODE = DcMotor.RunMode.RUN_USING_ENCODER;
+
+    //    DRIVE ENCODER
+
+    public static final double wheelDiameter = 3.54331; // INCH
+    public static final double TRACK_WIDTH_IN = 14.0;
+    public static final Localizer localizer = Localizer.DRIVE_ENCODER;
     public static final DriveTrainType DRIVE_TRAIN_TYPE = DriveTrainType.TANK_DRIVE;
+
+
     public static final String LEFT_MOTOR = "leftMotor";
     public static final String RIGHT_MOTOR = "rightMotor";
     public static final String FRONT_LEFT_MOTOR = "frontLeftMotor";
@@ -39,15 +51,10 @@ public final class RobotConstant {
 
     public static final DcMotor.ZeroPowerBehavior DRIVETRAIN_BEHAVIOR =
             DcMotor.ZeroPowerBehavior.BRAKE;
-    public static final motorLimit DRIVETRAIN_LIMIT = motorLimit.defaults();
+//    public static final motorLimit DRIVETRAIN_LIMIT = motorLimit.defaults();
+    public static final motorLimit DRIVETRAIN_LIMIT = new motorLimit(1.0 , 3.5);
 
-//    DRIVE ENCODER
-    public static final DcMotor.RunMode DRIVETRAIN_MODE = DcMotor.RunMode.RUN_WITHOUT_ENCODER;
-
-    public static final double wheelDiameter = 3.54331; // INCH
-    public static final double TRACK_WIDTH_IN = 14.0;
 //    PINPOINT
-    public static final Localizer localizer = Localizer.PINPOINT;
     public static final String localizerName = localizer.getHardware();
     public static final double xOffset = 0.0;
     public static final double yOffset = 0.0;

@@ -1,10 +1,11 @@
 package org.firstinspires.ftc.teamcode.Subsystem;
 
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.util.Range;
@@ -76,6 +77,9 @@ public class driveTrain extends SubsystemBase {
             lastlT = lm.pureTicks();
             lastrT = rm.pureTicks();
 
+            poseX = RobotConstant.STARTING_POSE.getX(DistanceUnit.INCH);
+            poseY = RobotConstant.STARTING_POSE.getY(DistanceUnit.INCH);
+
             imu.resetYaw();
         }
 
@@ -85,6 +89,8 @@ public class driveTrain extends SubsystemBase {
 
     @Override
     public void periodic() {
+        TelemetryPacket packet = new TelemetryPacket();
+
         if (driveTrainType == DriveTrainType.TANK_DRIVE) {
             overVoltage = lm.getMotor().isOverCurrent() || rm.getMotor().isOverCurrent();
         } else {
@@ -97,6 +103,17 @@ public class driveTrain extends SubsystemBase {
         } else {
             updateEncoderDrive();
         }
+
+        packet.fieldOverlay()
+                .setFill("blue")
+                .fillCircle(getPoseX(), getPoseY(), 4)
+                .fillRect(getPoseX() - RobotConstant.robotLength / 2.0, getPoseY() - RobotConstant.robotWidth / 2.0,
+                        RobotConstant.robotLength, RobotConstant.robotWidth)
+                .setStroke("blue")
+                .strokeLine(getPoseX(), getPoseY(),
+                        getPoseX() + (RobotConstant.robotLength / 2.0) * Math.cos(getPoseHeading()),
+                        getPoseY() + (RobotConstant.robotLength / 2.0) * Math.sin(getPoseHeading()));
+        FtcDashboard.getInstance().sendTelemetryPacket(packet);
     }
 
     private void updateEncoderDrive() {

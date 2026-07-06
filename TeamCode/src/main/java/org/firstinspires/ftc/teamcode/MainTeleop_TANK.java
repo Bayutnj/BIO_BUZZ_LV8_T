@@ -33,5 +33,11 @@ public class MainTeleop_TANK extends OpMode {
         if (gamepad1.left_trigger > 0.01) { intake.setState(INTAKE);}
         else if (gamepad1.left_bumper) { intake.setState(OUTTAKE);}
         else { intake.setState(STOP);}
+
+        telemetry.addData("X Pose", driveTrain.getPoseX());
+        telemetry.addData("Y Pose", driveTrain.getPoseY());
+        telemetry.addData("Heading", driveTrain.getPoseHeading());
+        telemetry.addData("Intake State", intake.getCurrentState());
+        telemetry.update();
     }
 }

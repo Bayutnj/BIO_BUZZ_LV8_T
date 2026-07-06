@@ -9,4 +9,5 @@ public enum DriveTrainType {
         this.motorUse = motorUse;
     }
 
+    public double getMotorUse() {return motorUse;}
 }

@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode.Constants;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.controller.PIDFController;
 
+@Config
 public final class PIDFCoefficients {
 
     public static final double drive_kP = 0.03;
