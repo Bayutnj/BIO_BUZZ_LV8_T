@@ -2,9 +2,6 @@ package org.firstinspires.ftc.teamcode.Subsystem;
 
 
 import com.arcrobotics.ftclib.command.SubsystemBase;
-import com.arcrobotics.ftclib.drivebase.DifferentialDrive;
-import com.arcrobotics.ftclib.drivebase.MecanumDrive;
-import com.arcrobotics.ftclib.drivebase.RobotDrive;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -146,6 +143,7 @@ public class driveTrain extends SubsystemBase {
     }
 
     public void fieldCentricMecanum(double forward, double lateral, double rx) {
+        if (driveTrainType != DriveTrainType.MECANUM_DRIVE) return;
         if (overVoltage) {
             flm.setPower(0);
             frm.setPower(0);
@@ -165,6 +163,7 @@ public class driveTrain extends SubsystemBase {
     }
 
     public void robotCentricMecanum(double forward, double lateral, double rx) {
+        if (driveTrainType != DriveTrainType.MECANUM_DRIVE) return;
         if (overVoltage) {
             flm.setPower(0);
             frm.setPower(0);
@@ -241,14 +240,6 @@ public class driveTrain extends SubsystemBase {
         }
         lm.setPower(0);
         rm.setPower(0);
-    }
-
-    public DcMotorEx getLeftMotor() {
-        return lm.getMotor();
-    }
-
-    public DcMotorEx getRightMotor() {
-        return rm.getMotor();
     }
 
     private double normalizeAngle(double angle) {
