@@ -19,6 +19,7 @@ public class Intake extends SubsystemBase {
 
     public intakeState currentState = Intake.intakeState.STOP;
 
+    public Intake() {}
     public void init(HardwareMap hwMap) {
         intake = new motorInitialize(hwMap,
                 RobotConstant.INTAKE,

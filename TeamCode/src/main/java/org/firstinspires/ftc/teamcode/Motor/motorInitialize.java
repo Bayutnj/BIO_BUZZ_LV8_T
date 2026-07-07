@@ -12,17 +12,19 @@ import org.firstinspires.ftc.teamcode.Motor.Config.motorTypes;
 
 public class motorInitialize {
     private DcMotorEx motor;
+
     private final double maxPower;
     private final double ticksPerRevo;
 
     public motorInitialize(HardwareMap hardwareMap, String hardwareName, DcMotorSimple.Direction direction,
                            DcMotor.ZeroPowerBehavior behavior, DcMotor.RunMode mode, motorTypes types, motorLimit limit) {
+
         motor = hardwareMap.get(DcMotorEx.class, hardwareName);
         motor.setDirection(direction);
         motor.setZeroPowerBehavior(behavior);
 
         this.maxPower = limit.getMaxPower();
-        this.ticksPerRevo = types.ticksPerRevo();
+        this.ticksPerRevo = types.getTicksPerRevolution();
 
         if (limit.getCurrentAlertAmps() != Double.POSITIVE_INFINITY) {
             motor.setCurrentAlert(limit.getCurrentAlertAmps(), CurrentUnit.AMPS);

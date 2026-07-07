@@ -10,8 +10,8 @@ import org.firstinspires.ftc.teamcode.Subsystem.Intake;
 import org.firstinspires.ftc.teamcode.Subsystem.driveTrain;
 
 public class MainTeleop_Mecanum extends OpMode {
-    driveTrain driveTrain = new driveTrain();
-    Intake intake = new Intake();
+    driveTrain driveTrain;
+    Intake intake;
 
     @Override
     public void init() {

@@ -8,7 +8,7 @@ import org.firstinspires.ftc.teamcode.Constants.RobotConstant;
 
 public enum Localizer {
 
-    PINPOINT("odo"),
+    PINPOINT(RobotConstant.localizerName),
     DRIVE_ENCODER("");
 
     private final String name;

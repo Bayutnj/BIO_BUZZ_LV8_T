@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Subsystem.Intake;
 import org.firstinspires.ftc.teamcode.Subsystem.driveTrain;
@@ -16,9 +17,9 @@ public class Autotest extends LinearOpMode {
 
         waitForStart();
 
-        driveTrain.driveTo(12, Math.toRadians(90), 1, this);
+        driveTrain.driveTo(false,12, Math.toRadians(90), 1, 1.0, this);
         intake.setState(Intake.intakeState.INTAKE);
-        driveTrain.driveTo(-12, Math.toRadians(-90), 1, this);
+        driveTrain.driveTo(true,-12, Math.toRadians(-90), 1, 1.0, this);
         intake.setState(Intake.intakeState.STOP);
         driveTrain.turnTo(Math.toRadians(90), 1.0, this);
 

@@ -8,6 +8,7 @@ import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -23,15 +24,21 @@ public class driveTrain extends SubsystemBase {
     private DriveTrainType driveTrainType;
     private motorInitialize lm, rm;
     private motorInitialize frm, flm;
-    private final Localizer localizerType = RobotConstant.localizer;
+    private  Localizer localizerType = RobotConstant.localizer;
+    private String localizerFallback;
     private GoBildaPinpointDriver odo;
     private IMU imu;
     private boolean overVoltage;
+    private boolean usingFallback;
 
     private double ticksToInch;
     private double poseX, poseY, poseHeading;
     private double lastlT, lastrT;
+    private double lastFlT, lastFrT;
 
+    private ElapsedTime timeOut = new ElapsedTime();
+
+    public driveTrain() {}
     public void init(HardwareMap hwMap) {
         driveTrainType = RobotConstant.DRIVE_TRAIN_TYPE;
 
@@ -73,9 +80,12 @@ public class driveTrain extends SubsystemBase {
             imu = hwMap.get(IMU.class, RobotConstant.IMU_NAME);
             imu.initialize(RobotConstant.IMU_PARAMETERS);
 
-            ticksToInch = (Math.PI * RobotConstant.wheelDiameter) / RobotConstant.DRIVE_TRAIN_MOTOR.ticksPerRevo();
+            ticksToInch = (Math.PI * RobotConstant.wheelDiameter) / RobotConstant.DRIVE_TRAIN_MOTOR.getTicksPerRevolution();
             lastlT = lm.pureTicks();
             lastrT = rm.pureTicks();
+
+            lastFlT = flm.pureTicks();
+            lastFrT = frm.pureTicks();
 
             poseX = RobotConstant.STARTING_POSE.getX(DistanceUnit.INCH);
             poseY = RobotConstant.STARTING_POSE.getY(DistanceUnit.INCH);
@@ -100,8 +110,37 @@ public class driveTrain extends SubsystemBase {
 
         if (localizerType == Localizer.PINPOINT) {
             odo.update();
+
+            GoBildaPinpointDriver.DeviceStatus DeviceStatus =  odo.getDeviceStatus();
+            boolean available = DeviceStatus == GoBildaPinpointDriver.DeviceStatus.READY ||
+                    DeviceStatus == GoBildaPinpointDriver.DeviceStatus.CALIBRATING;
+
+            localizerFallback = "PINPOINT";
+            if (available) {
+                usingFallback = false;
+
+                poseX = odo.getPosX(DistanceUnit.INCH);
+                poseY = odo.getPosY(DistanceUnit.INCH);
+                poseHeading = odo.getHeading(AngleUnit.RADIANS);
+
+                lastlT = lm.pureTicks();
+                lastrT = rm.pureTicks();
+                if (driveTrainType == DriveTrainType.MECANUM_DRIVE) {
+                    lastFlT = flm.pureTicks();
+                    lastFrT = frm.pureTicks();
+                }
+
+                localizerFallback = "PINPOINT";
+            } else {
+                usingFallback = true;
+                updateEncoderDrive();
+
+                localizerFallback = "ENCODER_DRIVE";
+            }
+
         } else {
             updateEncoderDrive();
+            localizerFallback = "ENCODER_DRIVE";
         }
 
         packet.fieldOverlay()
@@ -113,10 +152,19 @@ public class driveTrain extends SubsystemBase {
                 .strokeLine(getPoseX(), getPoseY(),
                         getPoseX() + (RobotConstant.robotLength / 2.0) * Math.cos(getPoseHeading()),
                         getPoseY() + (RobotConstant.robotLength / 2.0) * Math.sin(getPoseHeading()));
+
+        packet.put("Localizer Fallbacks", getLocalizerUse());
+        packet.put("Localizer Chosen", localizerType);
+        packet.put("Current X", poseX);
+        packet.put("Current Y", poseY);
+        packet.put("Current Heading", poseHeading);
         FtcDashboard.getInstance().sendTelemetryPacket(packet);
     }
 
     private void updateEncoderDrive() {
+        poseHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS) + RobotConstant.STARTING_HEADING;
+
+
         int currentLeftTicks = lm.pureTicks();
         int currentRightTicks = rm.pureTicks();
 
@@ -126,13 +174,25 @@ public class driveTrain extends SubsystemBase {
         lastrT = currentRightTicks;
 
         double robotCenter = (currentLeftInch + currentRightInch) / 2.0;
+        double robotLateral = 0.0;
 
-        poseHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS) + RobotConstant.STARTING_HEADING;
-        poseX += robotCenter * Math.cos(poseHeading);
-        poseY += robotCenter * Math.sin(poseHeading);
+        if (driveTrainType == DriveTrainType.MECANUM_DRIVE) {
+            int currentFrontLeftTicks = flm.pureTicks();
+            int currentFrontRightTicks = frm.pureTicks();
+
+            double currentFrontLeftInch = (currentFrontLeftTicks - lastFlT) * ticksToInch;
+            double currentFrontRightInch = (currentFrontRightTicks - lastFrT) * ticksToInch;
+
+            robotCenter = (currentFrontLeftInch + currentFrontRightInch + currentLeftInch + currentRightInch) / 4.0;
+            robotLateral = (currentFrontLeftInch - currentFrontRightInch - currentLeftInch + currentRightInch) / 4.0;
+        }
+
+        poseX += robotCenter * Math.cos(poseHeading) - robotLateral * Math.sin(poseHeading);
+        poseY += robotCenter * Math.sin(poseHeading) + robotLateral * Math.cos(poseHeading);
 
     }
 
+    public String getLocalizerUse() {return localizerFallback;}
     public double getPoseHeading() {
         return (localizerType == Localizer.PINPOINT) ? odo.getHeading(AngleUnit.RADIANS) : poseHeading;
     }
@@ -201,12 +261,22 @@ public class driveTrain extends SubsystemBase {
         rm.setPower(brPower / max);
     }
 
-    public void driveTo(double targetInch, double headingConsidered, double maxPower, LinearOpMode opMode) {
+    /**
+     * Creates a function to do strafe \ Forward in Inches
+     *
+     * @param useStrafe returns whether it is false or not if. if it false you can only use forward/backward, while true make your robot
+     *                  strafe.
+     * @param headingConsidered returns heading directions wanna be the target.
+     */
+    public void driveTo(boolean useStrafe, double targetInch, double headingConsidered, double maxPower, double timeout, LinearOpMode opMode) {
         double currentX = getPoseX();
         double currentY = getPoseY();
         double direction = Math.signum(targetInch);
 
         PIDFCoefficients.drivePIDF.reset();
+        timeOut.reset();
+
+        double errorTarget = Math.abs(targetInch) - Math.abs(3.0);
 
         while (opMode.opModeIsActive()) {
             periodic();
@@ -217,8 +287,10 @@ public class driveTrain extends SubsystemBase {
                 return;
             }
 
+
             double reached = Math.hypot(getPoseX() - currentX, getPoseY() - currentY);
-            if (reached >= Math.abs(targetInch)) break;
+            if (reached >= errorTarget) break;
+            if (timeOut.time() > timeout) { break;}
 
             double headingError = normalizeAngle(headingConsidered - getPoseHeading());
 
@@ -227,11 +299,25 @@ public class driveTrain extends SubsystemBase {
             double errorInch = (Math.abs(targetInch) - reached) * direction;
             double power = Range.clip(errorInch, -maxPower, maxPower);
 
-            lm.setPower(power - correction);
-            rm.setPower(power + correction);
+            if (useStrafe && driveTrainType == DriveTrainType.MECANUM_DRIVE) {
+                double rxC = Range.clip(correction, -maxPower, maxPower);
+                robotCentricMecanum(0, power, rxC);
+            } else if (!useStrafe && driveTrainType == DriveTrainType.MECANUM_DRIVE) {
+                double rxC = Range.clip(correction, -maxPower, maxPower);
+                robotCentricMecanum(power, 0, rxC);
+            } else {
+                double leftPower = Range.clip(power - correction, -maxPower, maxPower);
+                double rightPower = Range.clip(power + correction, -maxPower, maxPower);
+                lm.setPower(leftPower);
+                rm.setPower(rightPower);
+            }
         }
         lm.setPower(0);
         rm.setPower(0);
+        if (driveTrainType == DriveTrainType.MECANUM_DRIVE) {
+            flm.setPower(0);
+            frm.setPower(0);
+        }
     }
 
     public void turnTo(double angle, double maxPower, LinearOpMode opMode) {
@@ -254,6 +340,10 @@ public class driveTrain extends SubsystemBase {
 
             lm.setPower(-power);
             rm.setPower(power);
+            if (driveTrainType == DriveTrainType.MECANUM_DRIVE) {
+                flm.setPower(-power);
+                frm.setPower(power);
+            }
         }
         lm.setPower(0);
         rm.setPower(0);
