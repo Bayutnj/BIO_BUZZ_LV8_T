@@ -6,6 +6,7 @@ import static org.firstinspires.ftc.teamcode.Subsystem.Intake.intakeState.STOP;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
+import org.firstinspires.ftc.teamcode.Constants.RobotConstant;
 import org.firstinspires.ftc.teamcode.Subsystem.Intake;
 import org.firstinspires.ftc.teamcode.Subsystem.driveTrain;
 
@@ -15,7 +16,7 @@ public class MainTeleop_TANK extends OpMode {
 
     @Override
     public void init() {
-        driveTrain.init(hardwareMap);
+        driveTrain.init(hardwareMap, RobotConstant.STARTING_POSE);
         intake.init(hardwareMap);
     }
 

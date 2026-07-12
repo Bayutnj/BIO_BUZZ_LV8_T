@@ -13,6 +13,7 @@ import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.Constants.PIDFCoefficients;
 import org.firstinspires.ftc.teamcode.Constants.RobotConstant;
 import org.firstinspires.ftc.teamcode.Motor.DriveTrainType;
@@ -39,7 +40,7 @@ public class driveTrain extends SubsystemBase {
     private ElapsedTime timeOut = new ElapsedTime();
 
     public driveTrain() {}
-    public void init(HardwareMap hwMap) {
+    public void init(HardwareMap hwMap, Pose2D beginPose) {
         driveTrainType = RobotConstant.DRIVE_TRAIN_TYPE;
 
         if (driveTrainType == DriveTrainType.TANK_DRIVE) {
@@ -74,9 +75,24 @@ public class driveTrain extends SubsystemBase {
             odo.setOffsets(RobotConstant.xOffset, RobotConstant.yOffset, DistanceUnit.MM);
             odo.resetPosAndIMU();
 
-            odo.setPosition(RobotConstant.STARTING_POSE);
+            odo.setPosition(beginPose);
             odo.initialize();
+
+            ticksToInch = (Math.PI * RobotConstant.wheelDiameter) / RobotConstant.DRIVE_TRAIN_MOTOR.getTicksPerRevolution();
+
+            imu = hwMap.get(IMU.class, RobotConstant.IMU_NAME);
+            imu.initialize(RobotConstant.IMU_PARAMETERS);
+
+            lastlT = lm.pureTicks();
+            lastrT = rm.pureTicks();
+
+            if (driveTrainType == DriveTrainType.MECANUM_DRIVE) {
+                lastFlT = flm.pureTicks();
+                lastFrT = frm.pureTicks();
+            }
+
         } else {
+            usingFallback = true;
             imu = hwMap.get(IMU.class, RobotConstant.IMU_NAME);
             imu.initialize(RobotConstant.IMU_PARAMETERS);
 
@@ -84,11 +100,12 @@ public class driveTrain extends SubsystemBase {
             lastlT = lm.pureTicks();
             lastrT = rm.pureTicks();
 
-            lastFlT = flm.pureTicks();
-            lastFrT = frm.pureTicks();
+            if (driveTrainType == DriveTrainType.MECANUM_DRIVE) {
+                lastFlT = flm.pureTicks();
+                lastFrT = frm.pureTicks();
+            }
 
-            poseX = RobotConstant.STARTING_POSE.getX(DistanceUnit.INCH);
-            poseY = RobotConstant.STARTING_POSE.getY(DistanceUnit.INCH);
+            setPosition(beginPose);
 
             imu.resetYaw();
         }
@@ -162,7 +179,7 @@ public class driveTrain extends SubsystemBase {
     }
 
     private void updateEncoderDrive() {
-        poseHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS) + RobotConstant.STARTING_HEADING;
+        poseHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
 
 
         int currentLeftTicks = lm.pureTicks();
@@ -194,15 +211,37 @@ public class driveTrain extends SubsystemBase {
 
     public String getLocalizerUse() {return localizerFallback;}
     public double getPoseHeading() {
-        return (localizerType == Localizer.PINPOINT) ? odo.getHeading(AngleUnit.RADIANS) : poseHeading;
+//        return (localizerType == Localizer.PINPOINT) ? odo.getHeading(AngleUnit.RADIANS) : poseHeading;
+        return usingFallback ? poseHeading : odo.getHeading(AngleUnit.RADIANS);
     }
 
     public double getPoseX() {
-        return (localizerType == Localizer.PINPOINT) ? odo.getPosX(DistanceUnit.INCH) : poseX;
+//        return (localizerType == Localizer.PINPOINT) ? odo.getPosX(DistanceUnit.INCH) : poseX;
+        return usingFallback ? poseX : odo.getPosX(DistanceUnit.INCH);
     }
 
     public double getPoseY() {
-        return (localizerType == Localizer.PINPOINT) ? odo.getPosY(DistanceUnit.INCH) : poseY;
+//        return (localizerType == Localizer.PINPOINT) ? odo.getPosY(DistanceUnit.INCH) : poseY;
+        return usingFallback ? poseY : odo.getPosY(DistanceUnit.INCH);
+    }
+
+    public void setPosition(Pose2D pose) {
+//        poseX = pose.getX(DistanceUnit.INCH);
+        setPoseX(pose.getX(DistanceUnit.INCH), DistanceUnit.INCH);
+//        poseY = pose.getY(DistanceUnit.INCH);
+        setPoseY(pose.getY(DistanceUnit.INCH), DistanceUnit.INCH);
+//        poseHeading = pose.getHeading(AngleUnit.RADIANS);
+        setHeading(pose.getHeading(AngleUnit.RADIANS), AngleUnit.RADIANS);
+    }
+
+    public void setPoseX(double posX, DistanceUnit distanceUnit) {
+        poseX = DistanceUnit.INCH.fromUnit(distanceUnit, posX);
+    }
+    public void setPoseY(double posY, DistanceUnit distanceUnit) {
+        poseY = DistanceUnit.INCH.fromUnit(distanceUnit, posY);
+    }
+    public void setHeading(double angle, AngleUnit angleUnit) {
+        poseHeading = AngleUnit.RADIANS.fromUnit(angleUnit, angle);
     }
 
     public void ArcadeDrive(double forward, double rotate) {
@@ -347,6 +386,10 @@ public class driveTrain extends SubsystemBase {
         }
         lm.setPower(0);
         rm.setPower(0);
+        if (driveTrainType == DriveTrainType.MECANUM_DRIVE) {
+            flm.setPower(0);
+            frm.setPower(0);
+        }
     }
 
     private double normalizeAngle(double angle) {

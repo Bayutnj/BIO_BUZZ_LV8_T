@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.Constants.RobotConstant;
 import org.firstinspires.ftc.teamcode.Subsystem.Intake;
 import org.firstinspires.ftc.teamcode.Subsystem.driveTrain;
 
@@ -12,7 +13,7 @@ public class Autotest extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        driveTrain.init(hardwareMap);
+        driveTrain.init(hardwareMap, RobotConstant.STARTING_POSE);
         intake.init(hardwareMap);
 
         waitForStart();

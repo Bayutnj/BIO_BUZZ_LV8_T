@@ -43,6 +43,7 @@ public class motorInitialize {
         return motor.getCurrentPosition() / (int) (ticksPerRevo);
     }
 
+    public double getMotorRevo() {return ticksPerRevo;}
     public int pureTicks() { return motor.getCurrentPosition(); }
 
     public double getVelocity() {

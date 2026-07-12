@@ -8,7 +8,6 @@ import org.firstinspires.ftc.teamcode.Motor.motorInitialize;
 
 public class Intake extends SubsystemBase {
     motorInitialize intake;
-    HardwareMap hwMap;
     private boolean isBusy = false;
 
     public enum intakeState {
@@ -53,7 +52,7 @@ public class Intake extends SubsystemBase {
                 break;
         }
 
-        if (currentState == intakeState.INTAKE && intake.getMotor().isOverCurrent()) {
+        if (currentState == intakeState.INTAKE || currentState == intakeState.OUTTAKE && intake.getMotor().isOverCurrent()) {
             setState(intakeState.STOP);
         }
     }

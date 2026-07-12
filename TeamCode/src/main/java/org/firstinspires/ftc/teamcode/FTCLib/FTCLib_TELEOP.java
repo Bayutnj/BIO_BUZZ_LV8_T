@@ -8,6 +8,7 @@ import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.Constants.RobotConstant;
 import org.firstinspires.ftc.teamcode.Subsystem.Intake;
 import org.firstinspires.ftc.teamcode.Subsystem.Shooter;
 import org.firstinspires.ftc.teamcode.Subsystem.driveTrain;
@@ -24,7 +25,7 @@ public class FTCLib_TELEOP extends CommandOpMode {
 
         super.reset();
 
-        driveTrain.init(hardwareMap);
+        driveTrain.init(hardwareMap, RobotConstant.STARTING_POSE);
         intake.init(hardwareMap);
         shooter.init(hardwareMap);
         gamepadEx1 = new GamepadEx(gamepad1);
