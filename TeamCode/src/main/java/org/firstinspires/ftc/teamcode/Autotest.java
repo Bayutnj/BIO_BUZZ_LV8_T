@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.arcrobotics.ftclib.command.InstantCommand;
+import com.arcrobotics.ftclib.command.ScheduleCommand;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -7,13 +10,14 @@ import org.firstinspires.ftc.teamcode.Constants.RobotConstant;
 import org.firstinspires.ftc.teamcode.Subsystem.Intake;
 import org.firstinspires.ftc.teamcode.Subsystem.driveTrain;
 
+@Autonomous
 public class Autotest extends LinearOpMode {
     driveTrain driveTrain = new driveTrain();
     Intake intake = new Intake();
 
     @Override
     public void runOpMode() throws InterruptedException {
-        driveTrain.init(hardwareMap, RobotConstant.STARTING_POSE);
+        driveTrain.init(hardwareMap, RobotConstant.autoStartPose);
         intake.init(hardwareMap);
 
         waitForStart();
@@ -26,6 +30,7 @@ public class Autotest extends LinearOpMode {
 
         while (opModeIsActive()) {
             driveTrain.periodic();
+            RobotConstant.lastStartPose = driveTrain.getPose();
         }
     }
 }

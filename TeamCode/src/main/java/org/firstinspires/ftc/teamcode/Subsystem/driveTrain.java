@@ -20,19 +20,23 @@ import org.firstinspires.ftc.teamcode.Motor.DriveTrainType;
 import org.firstinspires.ftc.teamcode.Motor.Localizer;
 import org.firstinspires.ftc.teamcode.Motor.motorInitialize;
 
+// TODO: if any state having any trouble you should
+//  fix it by your self.
+// TODO: Here a lot of static constant that can be edited in the RobotConstant
 public class driveTrain extends SubsystemBase {
-
     private DriveTrainType driveTrainType;
     private motorInitialize lm, rm;
     private motorInitialize frm, flm;
+    private boolean overVoltage;
+
     private  Localizer localizerType = RobotConstant.localizer;
-    private String localizerFallback;
     private GoBildaPinpointDriver odo;
     private IMU imu;
-    private boolean overVoltage;
+    private String localizerFallback;
     private boolean usingFallback;
 
     private double ticksToInch;
+
     private double poseX, poseY, poseHeading;
     private double lastlT, lastrT;
     private double lastFlT, lastFrT;
@@ -127,6 +131,7 @@ public class driveTrain extends SubsystemBase {
 
         if (localizerType == Localizer.PINPOINT) {
             odo.update();
+            Pose2D lastPose = odo.getPosition();
 
             GoBildaPinpointDriver.DeviceStatus DeviceStatus =  odo.getDeviceStatus();
             boolean available = DeviceStatus == GoBildaPinpointDriver.DeviceStatus.READY ||
@@ -136,9 +141,10 @@ public class driveTrain extends SubsystemBase {
             if (available) {
                 usingFallback = false;
 
-                poseX = odo.getPosX(DistanceUnit.INCH);
-                poseY = odo.getPosY(DistanceUnit.INCH);
-                poseHeading = odo.getHeading(AngleUnit.RADIANS);
+//                poseX = odo.getPosX(DistanceUnit.INCH);
+//                poseY = odo.getPosY(DistanceUnit.INCH);
+//                poseHeading = odo.getHeading(AngleUnit.RADIANS);
+                setPosition(lastPose);
 
                 lastlT = lm.pureTicks();
                 lastrT = rm.pureTicks();
@@ -223,6 +229,9 @@ public class driveTrain extends SubsystemBase {
     public double getPoseY() {
 //        return (localizerType == Localizer.PINPOINT) ? odo.getPosY(DistanceUnit.INCH) : poseY;
         return usingFallback ? poseY : odo.getPosY(DistanceUnit.INCH);
+    }
+    public Pose2D getPose() {
+        return new Pose2D(DistanceUnit.INCH, getPoseX(), getPoseY(), AngleUnit.RADIANS, getPoseHeading());
     }
 
     public void setPosition(Pose2D pose) {
@@ -315,7 +324,7 @@ public class driveTrain extends SubsystemBase {
         PIDFCoefficients.drivePIDF.reset();
         timeOut.reset();
 
-        double errorTarget = Math.abs(targetInch) - Math.abs(3.0);
+        double errorTarget = Math.max(0.0, Math.abs(targetInch) - Math.abs(3.0));
 
         while (opMode.opModeIsActive()) {
             periodic();

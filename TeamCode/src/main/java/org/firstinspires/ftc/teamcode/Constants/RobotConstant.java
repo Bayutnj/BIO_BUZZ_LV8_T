@@ -13,6 +13,7 @@ import org.firstinspires.ftc.teamcode.Motor.DriveTrainType;
 import org.firstinspires.ftc.teamcode.Motor.Localizer;
 import org.firstinspires.ftc.teamcode.Motor.Config.motorTypes;
 
+// TODO: tune or set  all of these correctly
 public final class RobotConstant {
     private RobotConstant() {
     }
@@ -21,8 +22,9 @@ public final class RobotConstant {
     public static final double robotLength = 16.0; // INCH
 
     public static final Alliance alliance = Alliance.BLUE;
-    public static final double STARTING_HEADING = Math.toRadians(90);
-    public static final Pose2D STARTING_POSE = alliance.getPose();
+    public static final Pose2D autoStartPose = alliance.getPose();
+    public static Pose2D lastStartPose = Alliance.updatePose;
+    public static final Pose2D STARTING_POSE = lastStartPose;
 
     //    DRIVETRAIN
     public static final DcMotor.RunMode DRIVETRAIN_MODE = DcMotor.RunMode.RUN_USING_ENCODER;
@@ -84,6 +86,7 @@ public final class RobotConstant {
 //    public static final DcMotorSimple.Direction RIGHT_FLYWHEEL_DIRECTION = DcMotorSimple.Direction.FORWARD;
 //    public static final DcMotor.RunMode FLYWHEEL_MODE = DcMotor.RunMode.RUN_USING_ENCODER;
 //    public static final motorLimit FLYWHEEL_LIMIT = new motorLimit(1.0, 5);
+
     //    IMU
     public static final String IMU_NAME = "IMU";
     public static final IMU.Parameters IMU_PARAMETERS = new IMU.Parameters(
