@@ -1,12 +1,16 @@
-package org.firstinspires.ftc.teamcode.Localization.EncoderDrive;
+package org.firstinspires.ftc.teamcode.Localization.Odometry;
 
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+import org.firstinspires.ftc.teamcode.Constants.RobotConstant;
+import org.firstinspires.ftc.teamcode.FTC_Dashboard;
 
 public class TankDriveEncoder extends SubsystemBase implements Encoder {
     private final  Motor.Encoder leftEnc, rightEnc;
@@ -17,26 +21,30 @@ public class TankDriveEncoder extends SubsystemBase implements Encoder {
     private  double x;
     private double y;
     private double heading;
-    private double ticksPerInch;
+    private final double headingOffset;
+    private final double ticksPerInch;
 
-    public TankDriveEncoder(Pose2D startPose) {
+    public TankDriveEncoder(Pose2D startPose, IMU imu) {
+
         Motor leftMotor = new Motor();
         Motor rightMotor = new Motor();
 
         leftEnc = leftMotor.encoder;
         rightEnc = rightMotor.encoder;
 
+        this.imu = imu;
+        imu.resetYaw();
 
-
+        ticksPerInch = 0.0;
         pose = startPose;
         x = pose.getX(DistanceUnit.INCH);
         y = pose.getY(DistanceUnit.INCH);
-        heading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS) + pose.getHeading(AngleUnit.RADIANS);
+        headingOffset = pose.getHeading(AngleUnit.RADIANS) - imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
     }
 
     @Override
     public void update() {
-        heading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
+        heading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS) + headingOffset;
 
         int leftTicks = leftEnc.getPosition();
         int rightTicks =  rightEnc.getPosition();
@@ -59,9 +67,15 @@ public class TankDriveEncoder extends SubsystemBase implements Encoder {
     }
 
     @Override
+    public double getEncoderPosition() {
+        return leftEnc.getPosition() + rightEnc.getPosition();
+    }
+
+    @Override
     public void reset() {
         leftEnc.reset();
         rightEnc.reset();
+        imu.resetYaw();
 
         y = 0;
         x = 0;

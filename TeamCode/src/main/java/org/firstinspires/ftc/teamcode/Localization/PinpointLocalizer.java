@@ -10,7 +10,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.Constants.RobotConstant;
 
 // These class system maintain the pinpoint
-public  class PinpointLocalizer extends SubsystemBase implements Localizer {
+public class PinpointLocalizer extends SubsystemBase implements Localizer {
     private GoBildaPinpointDriver pinpoint;
     private Pose2D pose;
     private GoBildaPinpointDriver.DeviceStatus deviceStatus;

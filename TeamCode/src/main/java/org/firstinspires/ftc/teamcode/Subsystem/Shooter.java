@@ -5,6 +5,7 @@ import com.arcrobotics.ftclib.controller.wpilibcontroller.SimpleMotorFeedforward
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.arcrobotics.ftclib.hardware.motors.MotorGroup;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.Constants.RobotConstant;
 import org.firstinspires.ftc.teamcode.Hardware.Motor.BangBangController;
@@ -59,6 +60,7 @@ public class Shooter extends SubsystemBase {
         double bangControl = bangBangController.calculate(currentVelocity, target);
         double power = (bangControl > 0) ? 1.0 : feedForward;
 
+        power = Range.clip(power, 0, 1);
         flyWheel.set(power);
     }
 

@@ -9,8 +9,10 @@ import com.qualcomm.robotcore.hardware.IMU;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.Hardware.Motor.Config.motorLimit;
 import org.firstinspires.ftc.teamcode.Localization.Enum.DriveTrainType;
+import org.firstinspires.ftc.teamcode.Localization.Enum.LocalizerType;
 import org.firstinspires.ftc.teamcode.Localization.Localizer;
 import org.firstinspires.ftc.teamcode.Hardware.Motor.Config.motorTypes;
+import org.firstinspires.ftc.teamcode.Localization.LocalizerChooser;
 
 // TODO: tune or set  all of these correctly
 public final class RobotConstant {
@@ -29,7 +31,7 @@ public final class RobotConstant {
 
     public static final double wheelDiameter = 3.54331; // INCH
     public static final double TRACK_WIDTH_IN = 14.0;
-    public static final Localizer localizer = Localizer.DRIVE_ENCODER;
+    public static final LocalizerType localizerType = LocalizerType.PINPOINT;
     public static final DriveTrainType DRIVE_TRAIN_TYPE = DriveTrainType.MECANUM_DRIVE;
 
 
