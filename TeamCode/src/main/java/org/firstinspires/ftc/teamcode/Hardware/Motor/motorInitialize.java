@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Motor;
+package org.firstinspires.ftc.teamcode.Hardware.Motor;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -7,8 +7,8 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
-import org.firstinspires.ftc.teamcode.Motor.Config.motorLimit;
-import org.firstinspires.ftc.teamcode.Motor.Config.motorTypes;
+import org.firstinspires.ftc.teamcode.Hardware.Motor.Config.motorLimit;
+import org.firstinspires.ftc.teamcode.Hardware.Motor.Config.motorTypes;
 
 public class motorInitialize {
     private DcMotorEx motor;

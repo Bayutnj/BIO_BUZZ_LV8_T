@@ -4,7 +4,7 @@ import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.Constants.RobotConstant;
-import org.firstinspires.ftc.teamcode.Motor.motorInitialize;
+import org.firstinspires.ftc.teamcode.Hardware.Motor.motorInitialize;
 
 public class Intake extends SubsystemBase {
     motorInitialize intake;

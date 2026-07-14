@@ -1,11 +1,11 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Robot_Main;
 
-import com.arcrobotics.ftclib.command.InstantCommand;
-import com.arcrobotics.ftclib.command.ScheduleCommand;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+import org.firstinspires.ftc.teamcode.Constants.Alliance;
+import org.firstinspires.ftc.teamcode.Constants.Pose.targetPose;
 import org.firstinspires.ftc.teamcode.Constants.RobotConstant;
 import org.firstinspires.ftc.teamcode.Subsystem.Intake;
 import org.firstinspires.ftc.teamcode.Subsystem.driveTrain;
@@ -14,6 +14,7 @@ import org.firstinspires.ftc.teamcode.Subsystem.driveTrain;
 public class Autotest extends LinearOpMode {
     driveTrain driveTrain = new driveTrain();
     Intake intake = new Intake();
+    Pose2D currentPose;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -22,15 +23,19 @@ public class Autotest extends LinearOpMode {
 
         waitForStart();
 
-        driveTrain.driveTo(false,12, Math.toRadians(90), 1, 1.0, this);
+        driveTrain.driveTo(targetPose.firstPath, currentPose, 1.0);
         intake.setState(Intake.intakeState.INTAKE);
-        driveTrain.driveTo(true,-12, Math.toRadians(-90), 1, 1.0, this);
+        driveTrain.driveTo(targetPose.secondPath, currentPose, 1.0);
         intake.setState(Intake.intakeState.STOP);
         driveTrain.turnTo(Math.toRadians(90), 1.0, this);
 
         while (opModeIsActive()) {
             driveTrain.periodic();
-            RobotConstant.lastStartPose = driveTrain.getPose();
+
+            Pose2D currentPosition = driveTrain.getPose();
+            this.currentPose = currentPosition;
+
+            Alliance.updatePose = driveTrain.getPose();
         }
     }
 }

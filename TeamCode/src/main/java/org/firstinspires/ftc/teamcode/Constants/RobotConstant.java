@@ -3,15 +3,14 @@ package org.firstinspires.ftc.teamcode.Constants;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
-import org.firstinspires.ftc.teamcode.Motor.Config.motorLimit;
-import org.firstinspires.ftc.teamcode.Motor.DriveTrainType;
-import org.firstinspires.ftc.teamcode.Motor.Localizer;
-import org.firstinspires.ftc.teamcode.Motor.Config.motorTypes;
+import org.firstinspires.ftc.teamcode.Hardware.Motor.Config.motorLimit;
+import org.firstinspires.ftc.teamcode.Localization.Enum.DriveTrainType;
+import org.firstinspires.ftc.teamcode.Localization.Localizer;
+import org.firstinspires.ftc.teamcode.Hardware.Motor.Config.motorTypes;
 
 // TODO: tune or set  all of these correctly
 public final class RobotConstant {
@@ -20,11 +19,8 @@ public final class RobotConstant {
 
     public static final double robotWidth = 14.0; // INCH
     public static final double robotLength = 16.0; // INCH
-
     public static final Alliance alliance = Alliance.BLUE;
     public static final Pose2D autoStartPose = alliance.getPose();
-    public static Pose2D lastStartPose = Alliance.updatePose;
-    public static final Pose2D STARTING_POSE = lastStartPose;
 
     //    DRIVETRAIN
     public static final DcMotor.RunMode DRIVETRAIN_MODE = DcMotor.RunMode.RUN_USING_ENCODER;

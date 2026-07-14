@@ -1,8 +1,7 @@
-package org.firstinspires.ftc.teamcode.Constants;
+package org.firstinspires.ftc.teamcode.Controller;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.controller.PIDFController;
-import com.arcrobotics.ftclib.controller.wpilibcontroller.SimpleMotorFeedforward;
 
 @Config
 public final class PIDFCoefficients {

@@ -7,7 +7,7 @@ import com.arcrobotics.ftclib.hardware.motors.MotorGroup;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.Constants.RobotConstant;
-import org.firstinspires.ftc.teamcode.Motor.BangBangController;
+import org.firstinspires.ftc.teamcode.Hardware.Motor.BangBangController;
 
 public class Shooter extends SubsystemBase {
 

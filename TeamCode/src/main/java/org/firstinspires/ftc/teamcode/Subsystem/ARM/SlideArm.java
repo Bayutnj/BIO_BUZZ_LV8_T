@@ -7,7 +7,7 @@ import com.arcrobotics.ftclib.controller.wpilibcontroller.ElevatorFeedforward;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.teamcode.Motor.motorInitialize;
+import org.firstinspires.ftc.teamcode.Hardware.Motor.motorInitialize;
 
 public class SlideArm extends SubsystemBase {
     private motorInitialize ArmM;

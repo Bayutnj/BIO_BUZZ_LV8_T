@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Robot_Main;
 
 import static org.firstinspires.ftc.teamcode.Subsystem.Intake.intakeState.INTAKE;
 import static org.firstinspires.ftc.teamcode.Subsystem.Intake.intakeState.OUTTAKE;
@@ -6,17 +6,17 @@ import static org.firstinspires.ftc.teamcode.Subsystem.Intake.intakeState.STOP;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
-import org.firstinspires.ftc.teamcode.Constants.RobotConstant;
+import org.firstinspires.ftc.teamcode.Constants.Alliance;
 import org.firstinspires.ftc.teamcode.Subsystem.Intake;
 import org.firstinspires.ftc.teamcode.Subsystem.driveTrain;
 
 public class MainTeleop_Mecanum extends OpMode {
-    driveTrain driveTrain;
-    Intake intake;
+    driveTrain driveTrain = new driveTrain();
+    Intake intake = new Intake();
 
     @Override
     public void init() {
-        driveTrain.init(hardwareMap, RobotConstant.STARTING_POSE);
+        driveTrain.init(hardwareMap, Alliance.updatePose);
         intake.init(hardwareMap);
     }
 

@@ -14,11 +14,11 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
-import org.firstinspires.ftc.teamcode.Constants.PIDFCoefficients;
+import org.firstinspires.ftc.teamcode.Controller.PIDFCoefficients;
 import org.firstinspires.ftc.teamcode.Constants.RobotConstant;
-import org.firstinspires.ftc.teamcode.Motor.DriveTrainType;
-import org.firstinspires.ftc.teamcode.Motor.Localizer;
-import org.firstinspires.ftc.teamcode.Motor.motorInitialize;
+import org.firstinspires.ftc.teamcode.Localization.Enum.DriveTrainType;
+import org.firstinspires.ftc.teamcode.Localization.Localizer;
+import org.firstinspires.ftc.teamcode.Hardware.Motor.motorInitialize;
 
 // TODO: if any state having any trouble you should
 //  fix it by your self.
@@ -108,10 +108,9 @@ public class driveTrain extends SubsystemBase {
                 lastFlT = flm.pureTicks();
                 lastFrT = frm.pureTicks();
             }
+            imu.resetYaw();
 
             setPosition(beginPose);
-
-            imu.resetYaw();
         }
 
         PIDFCoefficients.turnPIDF.setTolerance(Math.toRadians(1));
@@ -218,18 +217,22 @@ public class driveTrain extends SubsystemBase {
     public String getLocalizerUse() {return localizerFallback;}
     public double getPoseHeading() {
 //        return (localizerType == Localizer.PINPOINT) ? odo.getHeading(AngleUnit.RADIANS) : poseHeading;
-        return usingFallback ? poseHeading : odo.getHeading(AngleUnit.RADIANS);
+//        return usingFallback ? poseHeading : odo.getHeading(AngleUnit.RADIANS);
+        return poseHeading;
     }
 
     public double getPoseX() {
 //        return (localizerType == Localizer.PINPOINT) ? odo.getPosX(DistanceUnit.INCH) : poseX;
-        return usingFallback ? poseX : odo.getPosX(DistanceUnit.INCH);
+//        return usingFallback ? poseX : odo.getPosX(DistanceUnit.INCH);
+        return poseX;
     }
 
     public double getPoseY() {
 //        return (localizerType == Localizer.PINPOINT) ? odo.getPosY(DistanceUnit.INCH) : poseY;
-        return usingFallback ? poseY : odo.getPosY(DistanceUnit.INCH);
+//        return usingFallback ? poseY : odo.getPosY(DistanceUnit.INCH);
+        return poseY;
     }
+
     public Pose2D getPose() {
         return new Pose2D(DistanceUnit.INCH, getPoseX(), getPoseY(), AngleUnit.RADIANS, getPoseHeading());
     }
@@ -309,64 +312,113 @@ public class driveTrain extends SubsystemBase {
         rm.setPower(brPower / max);
     }
 
-    /**
-     * Creates a function to do strafe \ Forward in Inches
-     *
-     * @param useStrafe returns whether it is false or not if. if it false you can only use forward/backward, while true make your robot
-     *                  strafe.
-     * @param headingConsidered returns heading directions wanna be the target.
-     */
-    public void driveTo(boolean useStrafe, double targetInch, double headingConsidered, double maxPower, double timeout, LinearOpMode opMode) {
-        double currentX = getPoseX();
-        double currentY = getPoseY();
-        double direction = Math.signum(targetInch);
+    public boolean driveTo(Pose2D targetPose, Pose2D currentPosition, double holdTime) {
 
-        PIDFCoefficients.drivePIDF.reset();
-        timeOut.reset();
+        double targetX = targetPose.getX(DistanceUnit.INCH);
+        double targetY = targetPose.getY(DistanceUnit.INCH);
+        double targetHeading = targetPose.getHeading(AngleUnit.RADIANS);
 
-        double errorTarget = Math.max(0.0, Math.abs(targetInch) - Math.abs(3.0));
+        double currentX = currentPosition.getX(DistanceUnit.INCH);
+        double currentY = currentPosition.getY(DistanceUnit.INCH);
+        double currentHeading = currentPosition.getHeading(AngleUnit.RADIANS);
 
-        while (opMode.opModeIsActive()) {
-            periodic();
+        double errorX = targetX - currentX;
+        double errorY = targetY - currentY;
+        double errorHeading = normalizeAngle(targetHeading - currentHeading);
 
-            if (overVoltage) {
-                lm.setPower(0);
-                rm.setPower(0);
-                return;
-            }
+        if (driveTrainType == DriveTrainType.TANK_DRIVE) {
+            double driveTarget = Math.hypot(errorX, errorY);
 
+            double headingOutput = PIDFCoefficients.turnPIDF.calculate(errorHeading);
+            double driveOutput = PIDFCoefficients.drivePIDF.calculate(driveTarget);
 
-            double reached = Math.hypot(getPoseX() - currentX, getPoseY() - currentY);
-            if (reached >= errorTarget) break;
-            if (timeOut.time() > timeout) { break;}
+            ArcadeDrive(driveOutput, headingOutput);
 
-            double headingError = normalizeAngle(headingConsidered - getPoseHeading());
+        } else {
+            double xPower = PIDFCoefficients.drivePIDF.calculate(errorX);
+            double yPower = PIDFCoefficients.drivePIDF.calculate(errorY);
 
-            double correction = PIDFCoefficients.drivePIDF.calculate(-headingError, 0);
+            double headingOutput = PIDFCoefficients.turnPIDF.calculate(currentHeading, targetHeading);
 
-            double errorInch = (Math.abs(targetInch) - reached) * direction;
-            double power = Range.clip(errorInch, -maxPower, maxPower);
-
-            if (useStrafe && driveTrainType == DriveTrainType.MECANUM_DRIVE) {
-                double rxC = Range.clip(correction, -maxPower, maxPower);
-                robotCentricMecanum(0, power, rxC);
-            } else if (!useStrafe && driveTrainType == DriveTrainType.MECANUM_DRIVE) {
-                double rxC = Range.clip(correction, -maxPower, maxPower);
-                robotCentricMecanum(power, 0, rxC);
-            } else {
-                double leftPower = Range.clip(power - correction, -maxPower, maxPower);
-                double rightPower = Range.clip(power + correction, -maxPower, maxPower);
-                lm.setPower(leftPower);
-                rm.setPower(rightPower);
-            }
+            fieldCentricMecanum(xPower, yPower, headingOutput);
         }
-        lm.setPower(0);
-        rm.setPower(0);
-        if (driveTrainType == DriveTrainType.MECANUM_DRIVE) {
-            flm.setPower(0);
-            frm.setPower(0);
+
+        boolean xAtTarget = Math.abs(errorX) < 3.0;
+        boolean yAtTarget = Math.abs(errorY) < 3.0;
+        boolean hAtTarget = Math.abs(errorHeading) < Math.toRadians(3);
+
+        boolean atTarget = xAtTarget && yAtTarget && hAtTarget;
+        if (atTarget) {
+            atTarget = true;
+        } else {
+            timeOut.reset();
+            atTarget = false;
         }
+
+        if (atTarget && timeOut.time() > holdTime) {
+            return true;
+        }
+        return false;
     }
+
+//    /**
+//     * Creates a function to do strafe \ Forward in Inches
+//     *
+//     * @param useStrafe returns whether it is false or not if. if it false you can only use forward/backward, while true make your robot
+//     *                  strafe.
+//     * @param headingConsidered returns heading directions wanna be the target.
+//     */
+//    public void driveTo(boolean useStrafe, double targetInch, double headingConsidered, double maxPower, double timeout, LinearOpMode opMode) {
+//        double currentX = getPoseX();
+//        double currentY = getPoseY();
+//        double direction = Math.signum(targetInch);
+//
+//        PIDFCoefficients.drivePIDF.reset();
+//        timeOut.reset();
+//
+//        double errorTarget = Math.max(0.0, Math.abs(targetInch) - Math.abs(3.0));
+//
+//        while (opMode.opModeIsActive()) {
+//            periodic();
+//
+//            if (overVoltage) {
+//                lm.setPower(0);
+//                rm.setPower(0);
+//                return;
+//            }
+//
+//
+//            double reached = Math.hypot(getPoseX() - currentX, getPoseY() - currentY);
+//            if (reached >= errorTarget) break;
+//            if (timeOut.time() > timeout) { break;}
+//
+//            double headingError = normalizeAngle(headingConsidered - getPoseHeading());
+//
+//            double correction = PIDFCoefficients.drivePIDF.calculate(-headingError, 0);
+//
+//            double errorInch = (Math.abs(targetInch) - reached) * direction;
+//            double power = Range.clip(errorInch, -maxPower, maxPower);
+//
+//            if (useStrafe && driveTrainType == DriveTrainType.MECANUM_DRIVE) {
+//                double rxC = Range.clip(correction, -maxPower, maxPower);
+//                robotCentricMecanum(0, power, rxC);
+//            } else if (!useStrafe && driveTrainType == DriveTrainType.MECANUM_DRIVE) {
+//                double rxC = Range.clip(correction, -maxPower, maxPower);
+//                robotCentricMecanum(power, 0, rxC);
+//            } else {
+//                double leftPower = Range.clip(power - correction, -maxPower, maxPower);
+//                double rightPower = Range.clip(power + correction, -maxPower, maxPower);
+//                lm.setPower(leftPower);
+//                rm.setPower(rightPower);
+//            }
+//        }
+//        lm.setPower(0);
+//        rm.setPower(0);
+//        if (driveTrainType == DriveTrainType.MECANUM_DRIVE) {
+//            flm.setPower(0);
+//            frm.setPower(0);
+//        }
+//    }
 
     public void turnTo(double angle, double maxPower, LinearOpMode opMode) {
         PIDFCoefficients.turnPIDF.reset();

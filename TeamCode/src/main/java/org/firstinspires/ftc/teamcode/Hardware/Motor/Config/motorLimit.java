@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Motor.Config;
+package org.firstinspires.ftc.teamcode.Hardware.Motor.Config;
 
 public final class motorLimit {
     private final double maxPower;
