@@ -5,6 +5,7 @@ import com.arcrobotics.ftclib.controller.wpilibcontroller.SimpleMotorFeedforward
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.arcrobotics.ftclib.hardware.motors.MotorGroup;
 import com.arcrobotics.ftclib.util.InterpLUT;
+import com.arcrobotics.ftclib.util.MathUtils;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.Range;
@@ -18,7 +19,8 @@ import org.firstinspires.ftc.teamcode.Hardware.Motor.BangBangController;
 
 public class Shooter extends SubsystemBase {
 
-    private MotorGroup flyWheel;
+    private Motor fl1;
+    private Motor fl2;
     private SimpleMotorFeedforward feedforward;
     private BangBangController bangBangController;
     private VoltageSensor voltageSensor;
@@ -39,15 +41,18 @@ public class Shooter extends SubsystemBase {
     public Shooter() {
     }
 
-    public void init(HardwareMap HwMap) {
-        flyWheel = new MotorGroup(
-                new Motor(HwMap, RobotConstant.LEFT_FLYWHEEL, 28, 6000),
-                new Motor(HwMap, RobotConstant.RIGHT_FLYWHEEL, 28, 6000));
+    public void init(HardwareMap hardwareMap) {
+        fl1 = new Motor(hardwareMap, RobotConstant.LEFT_FLYWHEEL, 28, 6000); // LeftFlyWheel
+        fl2 = new Motor(hardwareMap, RobotConstant.RIGHT_FLYWHEEL, 28, 6000); // RightFlyWheel
 
-        voltageSensor = HwMap.get(VoltageSensor.class, "Control Hub");
+        voltageSensor = hardwareMap.get(VoltageSensor.class, "Control Hub");
 
-        flyWheel.setRunMode(Motor.RunMode.RawPower);
-        flyWheel.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
+        fl1.setRunMode(Motor.RunMode.RawPower);
+        fl2.setRunMode(Motor.RunMode.RawPower);
+        fl1.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
+        fl2.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
+
+        fl2.setInverted(true);
 
         feedforward = new SimpleMotorFeedforward(PIDFCoefficients.kS, PIDFCoefficients.kV);
         bangBangController = new BangBangController(ShooterConstant.TICKS_TOLERANCE); // 50 ticks tolerance
@@ -72,7 +77,8 @@ public class Shooter extends SubsystemBase {
 
             case STOP:
             default:
-                flyWheel.set(0);
+                fl1.set(0);
+                fl2.set(0);
                 isBusy = false;
                 break;
         }
@@ -82,7 +88,7 @@ public class Shooter extends SubsystemBase {
         this.distanceGoal = d;
     }
 
-    public void getDistanceGoal(Pose2D currentPosition, Pose2D targetPosition) { // INCH
+    public void setDistanceGoal(Pose2D currentPosition, Pose2D targetPosition) { // INCH
         this.distanceGoal = Math.hypot(targetPosition.getX(DistanceUnit.INCH) - currentPosition.getX(DistanceUnit.INCH),
                 targetPosition.getY(DistanceUnit.INCH) - currentPosition.getY(DistanceUnit.INCH));
     }
@@ -91,19 +97,28 @@ public class Shooter extends SubsystemBase {
     private void setFlyWheel(double target) {
         double currentVoltage = voltageSensor.getVoltage();
 
-        double currentVelocity = flyWheel.getVelocity();
+        double cV1 = fl1.getCorrectedVelocity();
+        double cV2 = fl2.getCorrectedVelocity();
+
         double feedForwardVolts = feedforward.calculate(target);
-
         double feedForwardPower = feedForwardVolts / currentVoltage;
-        double bangControl = bangBangController.calculate(currentVelocity, target);
-        double power = (bangControl > 0) ? 1.0 : feedForwardPower;
+        double out1 = bangBangController.calculate(cV1, target);
+        double out2 = bangBangController.calculate(cV2, target);
 
-        power = Range.clip(power, 0, ShooterConstant.MAX_POWER);
-        flyWheel.set(power);
+        double power1 = (out1 > 0) ? 1.0 : feedForwardPower;
+        double power2 = (out2 > 0) ? 1.0 : feedForwardPower;
+
+        power1 = Range.clip(power1, 0, ShooterConstant.MAX_POWER);
+        power2 = Range.clip(power2, 0, ShooterConstant.MAX_POWER);
+        fl1.set(power1);
+        fl2.set(power2);
     }
 
     private double calculatePower(double distance) {
-        return lut.get(distance);
+        double d = MathUtils.clamp(distance,
+                ShooterConstant.MIN_CALIBRATED, ShooterConstant.MAX_CALIBRATED);
+
+        return lut.get(d);
     }
 
     public void setState(sState s) {
