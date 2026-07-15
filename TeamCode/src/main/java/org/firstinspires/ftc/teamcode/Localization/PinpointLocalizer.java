@@ -23,8 +23,8 @@ public class PinpointLocalizer extends SubsystemBase implements Localizer {
 
         pinpoint.resetPosAndIMU();
 
-        pinpoint.setPosition(startPose);
         pinpoint.initialize();
+        pinpoint.setPosition(startPose);
 
         pose = startPose;
 

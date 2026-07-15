@@ -11,6 +11,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.Constants.RobotConstant;
 import org.firstinspires.ftc.teamcode.FTC_Dashboard;
+import org.firstinspires.ftc.teamcode.Subsystem.Robot;
 
 public class TankDriveEncoder extends SubsystemBase implements Encoder {
     private final  Motor.Encoder leftEnc, rightEnc;
@@ -35,7 +36,7 @@ public class TankDriveEncoder extends SubsystemBase implements Encoder {
         this.imu = imu;
         imu.resetYaw();
 
-        ticksPerInch = 0.0;
+        ticksPerInch = (RobotConstant.DRIVE_TRAIN_MOTOR.getTicksPerRevolution()) / (RobotConstant.wheelDiameter * Math.PI);
         pose = startPose;
         x = pose.getX(DistanceUnit.INCH);
         y = pose.getY(DistanceUnit.INCH);
@@ -76,6 +77,7 @@ public class TankDriveEncoder extends SubsystemBase implements Encoder {
         leftEnc.reset();
         rightEnc.reset();
         imu.resetYaw();
+        heading = 0.0;
 
         y = 0;
         x = 0;

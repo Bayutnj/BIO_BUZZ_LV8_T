@@ -40,6 +40,9 @@ public class MainTeleop extends CommandOpMode {
         new Trigger(() -> gamepadEx.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.01)
                 .whenActive(() -> robot.setIntake(Intake.intakeState.INTAKE))
                 .whenInactive(new InstantCommand(() -> robot.setIntake(Intake.intakeState.STOP)));
+        gamepadEx.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER)
+                .whenPressed(() -> robot.setIntake(Intake.intakeState.OUTTAKE))
+                .whenInactive(() -> robot.setIntake(Intake.intakeState.STOP));
 
 
         telemetry.addData("X", robot.getLocalizer().getX());
