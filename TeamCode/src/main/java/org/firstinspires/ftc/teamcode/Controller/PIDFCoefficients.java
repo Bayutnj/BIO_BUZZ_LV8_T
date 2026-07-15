@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.Controller;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.controller.PIDFController;
+import com.arcrobotics.ftclib.controller.wpilibcontroller.SimpleMotorFeedforward;
 
 @Config
 public final class PIDFCoefficients {
@@ -21,6 +22,7 @@ public final class PIDFCoefficients {
     public static final PIDFController turnPIDF = new PIDFController(PIDFCoefficients.turn_kP,
             PIDFCoefficients.turn_kI, PIDFCoefficients.turn_kD, PIDFCoefficients.turn_kF);
 
-//    public static final com.qualcomm.robotcore.hardware.PIDFCoefficients flyWheel =
-//            new com.qualcomm.robotcore.hardware.PIDFCoefficients(0.1, 0,0.001 ,10.5);
+//    kV, kS for shooter feedforward
+    public static final double kV = 0.3;
+    public static final double kS = 0.003;
 }

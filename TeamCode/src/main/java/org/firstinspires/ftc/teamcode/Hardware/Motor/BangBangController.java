@@ -4,19 +4,19 @@ public class BangBangController {
 
     private double tolerance;
     private double setPoint;
-    private double pv;
+    private double measurement;
     public BangBangController(double tolerance) {
         this.tolerance = tolerance;
     }
 
     public double calculate(double pv, double sp) {
         this.setPoint = sp;
-        this.pv = pv;
+        this.measurement = pv;
         return pv < sp ? 1.0 : 0.0;
     }
 
     public boolean atSetPoint() {
-        return Math.abs(setPoint - pv) < tolerance;
+        return Math.abs(setPoint - measurement) < tolerance;
     }
 
     public void setSetPoint(double sp) {
@@ -24,6 +24,6 @@ public class BangBangController {
     }
 
     public double getError() {
-        return setPoint - pv;
+        return setPoint - measurement;
     }
 }
