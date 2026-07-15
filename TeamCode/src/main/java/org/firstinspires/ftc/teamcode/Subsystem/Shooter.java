@@ -9,6 +9,8 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.Constants.RobotConstant;
 import org.firstinspires.ftc.teamcode.Constants.ShooterConstant;
 import org.firstinspires.ftc.teamcode.Controller.PIDFCoefficients;
@@ -23,6 +25,7 @@ public class Shooter extends SubsystemBase {
 
 //    Lut = Lok up table
     private final InterpLUT lut = new InterpLUT();
+    private double distanceGoal = 0;
 
     public enum sState {
         SPINS,
@@ -60,7 +63,7 @@ public class Shooter extends SubsystemBase {
 
     @Override
     public void periodic() {
-        double target = calculatePower(0);
+        double target = calculatePower(distanceGoal);
         switch (currentState) {
             case SPINS:
                 setFlyWheel(target);
@@ -74,6 +77,16 @@ public class Shooter extends SubsystemBase {
                 break;
         }
     }
+
+    public void setDistanceGoal(double d) {
+        this.distanceGoal = d;
+    }
+
+    public void getDistanceGoal(Pose2D currentPosition, Pose2D targetPosition) { // INCH
+        this.distanceGoal = Math.hypot(targetPosition.getX(DistanceUnit.INCH) - currentPosition.getX(DistanceUnit.INCH),
+                targetPosition.getY(DistanceUnit.INCH) - currentPosition.getY(DistanceUnit.INCH));
+    }
+
 
     private void setFlyWheel(double target) {
         double currentVoltage = voltageSensor.getVoltage();
