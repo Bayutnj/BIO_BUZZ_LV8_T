@@ -52,7 +52,7 @@ public class Intake extends SubsystemBase {
                 break;
         }
 
-        if (currentState == intakeState.INTAKE || currentState == intakeState.OUTTAKE && intake.getMotor().isOverCurrent()) {
+        if ((currentState == intakeState.INTAKE || currentState == intakeState.OUTTAKE) && intake.getMotor().isOverCurrent()) {
             setState(intakeState.STOP);
         }
     }

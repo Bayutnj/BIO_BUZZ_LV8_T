@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.Subsystem;
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.arcrobotics.ftclib.controller.wpilibcontroller.SimpleMotorFeedforward;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
-import com.arcrobotics.ftclib.hardware.motors.MotorGroup;
 import com.arcrobotics.ftclib.util.InterpLUT;
 import com.arcrobotics.ftclib.util.MathUtils;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -26,7 +25,7 @@ public class Shooter extends SubsystemBase {
     private VoltageSensor voltageSensor;
 
 //    Lut = Lok up table
-    private final InterpLUT lut = new InterpLUT();
+    private final InterpLUT velocityLUT = new InterpLUT();
     private double distanceGoal = 0;
 
     public enum sState {
@@ -58,12 +57,12 @@ public class Shooter extends SubsystemBase {
         bangBangController = new BangBangController(ShooterConstant.TICKS_TOLERANCE); // 50 ticks tolerance
 
 //        Shooter Data(Distance, Velocity)
-        lut.add(43.6, 980);
-        lut.add(75.8, 1320);
-        lut.add(102.6, 1360);
-        lut.add(135.6, 1740);
-        lut.add(150.6, 1840);
-        lut.createLUT();
+        velocityLUT.add(43.6, 980);
+        velocityLUT.add(75.8, 1320);
+        velocityLUT.add(102.6, 1360);
+        velocityLUT.add(135.6, 1740);
+        velocityLUT.add(150.6, 1840);
+        velocityLUT.createLUT();
     }
 
     @Override
@@ -105,8 +104,17 @@ public class Shooter extends SubsystemBase {
         double out1 = bangBangController.calculate(cV1, target);
         double out2 = bangBangController.calculate(cV2, target);
 
-        double power1 = (out1 > 0) ? 1.0 : feedForwardPower;
-        double power2 = (out2 > 0) ? 1.0 : feedForwardPower;
+        double power1 = feedForwardPower;
+        double power2 = feedForwardPower;
+
+        if (out1 > 0) {
+            double error1 = target - cV1;
+            power1 += (error1 / target) * ShooterConstant.BANG_GAIN;
+        }
+        if (out2 > 0) {
+            double error2 = target - cV2;
+            power2 += (error2 / target) * ShooterConstant.BANG_GAIN;
+        }
 
         power1 = Range.clip(power1, 0, ShooterConstant.MAX_POWER);
         power2 = Range.clip(power2, 0, ShooterConstant.MAX_POWER);
@@ -118,7 +126,7 @@ public class Shooter extends SubsystemBase {
         double d = MathUtils.clamp(distance,
                 ShooterConstant.MIN_CALIBRATED, ShooterConstant.MAX_CALIBRATED);
 
-        return lut.get(d);
+        return velocityLUT.get(d);
     }
 
     public void setState(sState s) {
