@@ -4,6 +4,7 @@ import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.arcrobotics.ftclib.controller.wpilibcontroller.SimpleMotorFeedforward;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.arcrobotics.ftclib.hardware.motors.MotorGroup;
+import com.arcrobotics.ftclib.util.InterpLUT;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.Range;
@@ -19,6 +20,9 @@ public class Shooter extends SubsystemBase {
     private SimpleMotorFeedforward feedforward;
     private BangBangController bangBangController;
     private VoltageSensor voltageSensor;
+
+//    Lut = Lok up table
+    private final InterpLUT lut = new InterpLUT();
 
     public enum sState {
         SPINS,
@@ -44,13 +48,22 @@ public class Shooter extends SubsystemBase {
 
         feedforward = new SimpleMotorFeedforward(PIDFCoefficients.kS, PIDFCoefficients.kV);
         bangBangController = new BangBangController(ShooterConstant.TICKS_TOLERANCE); // 50 ticks tolerance
+
+//        Shooter Data(Distance, Velocity)
+        lut.add(43.6, 980);
+        lut.add(75.8, 1320);
+        lut.add(102.6, 1360);
+        lut.add(135.6, 1740);
+        lut.add(150.6, 1840);
+        lut.createLUT();
     }
 
     @Override
     public void periodic() {
+        double target = calculatePower(0);
         switch (currentState) {
             case SPINS:
-                setFlyWheel(1300);
+                setFlyWheel(target);
                 isBusy = false;
                 break;
 
@@ -77,8 +90,7 @@ public class Shooter extends SubsystemBase {
     }
 
     private double calculatePower(double distance) {
-        double dataPower = 19219219219219219292.0;
-        return 0;
+        return lut.get(distance);
     }
 
     public void setState(sState s) {
