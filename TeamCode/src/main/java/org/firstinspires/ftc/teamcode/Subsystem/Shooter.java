@@ -25,7 +25,8 @@ public class Shooter extends SubsystemBase {
     private VoltageSensor voltageSensor;
 
 //    Lut = Lok up table
-    private final InterpLUT velocityLUT = new InterpLUT();
+    private final InterpLUT velocityLUT = new InterpLUT(); // Shooter Velocity LUT
+    private final InterpLUT hoodLUT = new InterpLUT(); // Hood Angle LUT
     private double distanceGoal = 0;
 
     public enum sState {
@@ -62,7 +63,10 @@ public class Shooter extends SubsystemBase {
         velocityLUT.add(102.6, 1360);
         velocityLUT.add(135.6, 1740);
         velocityLUT.add(150.6, 1840);
+
+        hoodLUT.add(43.6, 0.3);
         velocityLUT.createLUT();
+        hoodLUT.createLUT();
     }
 
     @Override
@@ -107,6 +111,8 @@ public class Shooter extends SubsystemBase {
         double power1 = feedForwardPower;
         double power2 = feedForwardPower;
 
+//        double power1 = (out1 > 0) ? 1.0 : feedForwardPower;
+//        double power2 = (out2 > 0) ? 1.0 : feedForwardPower;
         if (out1 > 0) {
             double error1 = target - cV1;
             power1 += (error1 / target) * ShooterConstant.BANG_GAIN;

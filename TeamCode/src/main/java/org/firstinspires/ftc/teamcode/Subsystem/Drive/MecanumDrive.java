@@ -9,10 +9,10 @@ import org.firstinspires.ftc.teamcode.Constants.RobotConstant;
 import org.firstinspires.ftc.teamcode.Localization.Localizer;
 
 public class MecanumDrive extends SubsystemBase implements DriveTrain {
-    private final Motor leftFront;
-    private final Motor rightFront;
-    private final Motor leftBack;
-    private final Motor rightBack;
+    public static Motor leftFront;
+    public static Motor rightFront;
+    public static Motor leftBack;
+    public static Motor rightBack;
 
     private final com.arcrobotics.ftclib.drivebase.MecanumDrive drive;
     private final Localizer localizer;

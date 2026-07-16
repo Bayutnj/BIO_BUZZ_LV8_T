@@ -10,8 +10,8 @@ import org.firstinspires.ftc.teamcode.Localization.Enum.DriveTrainType;
 import org.firstinspires.ftc.teamcode.Localization.Localizer;
 
 public class TankDrive extends SubsystemBase implements DriveTrain {
-    private Motor left;
-    private Motor right;
+    public static Motor left;
+    public static Motor right;
 
     private final DifferentialDrive drive;
     private final Localizer localizer;

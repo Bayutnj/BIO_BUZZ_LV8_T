@@ -15,6 +15,7 @@ import org.firstinspires.ftc.teamcode.Subsystem.Robot;
 
 public class TankDriveEncoder extends SubsystemBase implements Encoder {
     private final  Motor.Encoder leftEnc, rightEnc;
+    private final Motor lm, rm;
     private double lastLeftEnc, lastRightEnc;
     private IMU imu;
     private Pose2D pose;
@@ -25,13 +26,12 @@ public class TankDriveEncoder extends SubsystemBase implements Encoder {
     private final double headingOffset;
     private final double ticksPerInch;
 
-    public TankDriveEncoder(Pose2D startPose, IMU imu) {
+    public TankDriveEncoder(Pose2D startPose, IMU imu, Motor lm, Motor rm) {
+        this.lm = lm;
+        this.rm = rm;
 
-        Motor leftMotor = new Motor();
-        Motor rightMotor = new Motor();
-
-        leftEnc = leftMotor.encoder;
-        rightEnc = rightMotor.encoder;
+        leftEnc = lm.encoder;
+        rightEnc = rm.encoder;
 
         this.imu = imu;
         imu.resetYaw();

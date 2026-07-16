@@ -10,6 +10,9 @@ import org.firstinspires.ftc.teamcode.Localization.Odometry.MecanumEncoder;
 import org.firstinspires.ftc.teamcode.Localization.Odometry.TankDriveEncoder;
 import org.firstinspires.ftc.teamcode.Localization.Enum.DriveTrainType;
 import org.firstinspires.ftc.teamcode.Localization.Enum.LocalizerType;
+import org.firstinspires.ftc.teamcode.Subsystem.Drive.DriveTrain;
+import org.firstinspires.ftc.teamcode.Subsystem.Drive.MecanumDrive;
+import org.firstinspires.ftc.teamcode.Subsystem.Drive.TankDrive;
 
 public class LocalizerChooser {
 
@@ -28,11 +31,12 @@ public class LocalizerChooser {
 
                 switch (RobotConstant.DRIVE_TRAIN_TYPE) {
                     case MECANUM_DRIVE:
-                        encoder = new MecanumEncoder(startPose, imu);
+                        encoder = new MecanumEncoder(startPose, imu, MecanumDrive.rightFront,
+                                MecanumDrive.leftFront, MecanumDrive.rightBack, MecanumDrive.leftBack);
                         break;
 
                     case TANK_DRIVE:
-                        encoder = new TankDriveEncoder(startPose, imu);
+                        encoder = new TankDriveEncoder(startPose, imu, TankDrive.left, TankDrive.right);
                         break;
 
                     default:

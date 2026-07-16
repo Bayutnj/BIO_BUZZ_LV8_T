@@ -11,6 +11,7 @@ import org.firstinspires.ftc.teamcode.Constants.RobotConstant;
 
 public class MecanumEncoder extends SubsystemBase implements Encoder {
     private final Motor.Encoder backRightEnc, backLeftEnc, frontRightEnc, frontLeftEnc;
+    private final Motor fr, fl, br, bl;
     private final IMU imu;
     private Pose2D pose;
     private  double x;
@@ -18,19 +19,19 @@ public class MecanumEncoder extends SubsystemBase implements Encoder {
     private double heading;
 
 
-    public MecanumEncoder(Pose2D startPose, IMU imu) {
-        Motor frontRight = new Motor();
-        Motor frontLeft = new Motor();
-        Motor backRight = new Motor();
-        Motor backLeft = new Motor();
+    public MecanumEncoder(Pose2D startPose, IMU imu, Motor fr, Motor fl, Motor br, Motor bl) {
+       this.fr = fr;
+       this.fl = fl;
+       this.br = br;
+       this.bl = bl;
 
         this.imu = imu;
         imu.resetYaw();
 
-        backRightEnc = backRight.encoder;
-        backLeftEnc = backLeft.encoder;
-        frontLeftEnc = frontLeft.encoder;
-        frontRightEnc = frontRight.encoder;
+        backRightEnc = br.encoder;
+        backLeftEnc = bl.encoder;
+        frontLeftEnc = fl.encoder;
+        frontRightEnc = fr.encoder;
 
         pose = startPose;
     }
