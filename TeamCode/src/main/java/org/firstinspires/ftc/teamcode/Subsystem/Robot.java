@@ -15,8 +15,8 @@ public class Robot{
 
     private final HardwareMap hardwareMap;
     private final IMU imu;
-    private final Localizer localizer;
     private final DriveTrain driveTrain;
+    private Localizer localizer;
     private final Intake intake;
 
     public Robot(HardwareMap hardwareMap, Pose2D startPose) {
@@ -24,13 +24,14 @@ public class Robot{
 
         imu = hardwareMap.get(IMU.class, RobotConstant.IMU_NAME);
 
-        localizer = LocalizerChooser.create(
-                hardwareMap, imu, startPose
-        );
-
         driveTrain = DriveChooser.create(
                 hardwareMap, localizer
         );
+
+        localizer = LocalizerChooser.create(
+                hardwareMap, startPose
+        );
+
 
         intake = new Intake();
         intake.init(hardwareMap);

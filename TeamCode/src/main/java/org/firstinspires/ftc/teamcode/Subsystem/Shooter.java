@@ -2,7 +2,9 @@ package org.firstinspires.ftc.teamcode.Subsystem;
 
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.arcrobotics.ftclib.controller.wpilibcontroller.SimpleMotorFeedforward;
+import com.arcrobotics.ftclib.hardware.ServoEx;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
+import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.arcrobotics.ftclib.util.InterpLUT;
 import com.arcrobotics.ftclib.util.MathUtils;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -18,8 +20,10 @@ import org.firstinspires.ftc.teamcode.Hardware.Motor.BangBangController;
 
 public class Shooter extends SubsystemBase {
 
-    private Motor fl1;
-    private Motor fl2;
+    private MotorEx fl1;
+    private MotorEx fl2;
+    private ServoEx hood;
+
     private SimpleMotorFeedforward feedforward;
     private BangBangController bangBangController;
     private VoltageSensor voltageSensor;
@@ -28,13 +32,14 @@ public class Shooter extends SubsystemBase {
     private final InterpLUT velocityLUT = new InterpLUT(); // Shooter Velocity LUT
     private final InterpLUT hoodLUT = new InterpLUT(); // Hood Angle LUT
     private double distanceGoal = 0;
+    private double t = 0; // Target Velocity
 
     public enum sState {
         SPINS,
         STOP
     }
 
-    private boolean isBusy = false;
+    private  boolean isBusy = false;
 
     public sState currentState = sState.STOP;
 
@@ -42,17 +47,20 @@ public class Shooter extends SubsystemBase {
     }
 
     public void init(HardwareMap hardwareMap) {
-        fl1 = new Motor(hardwareMap, RobotConstant.LEFT_FLYWHEEL, 28, 6000); // LeftFlyWheel
-        fl2 = new Motor(hardwareMap, RobotConstant.RIGHT_FLYWHEEL, 28, 6000); // RightFlyWheel
+        fl1 = new MotorEx(hardwareMap, RobotConstant.LEFT_FLYWHEEL, Motor.GoBILDA.BARE); // LeftFlyWheel
+        fl2 = new MotorEx(hardwareMap, RobotConstant.RIGHT_FLYWHEEL, Motor.GoBILDA.BARE); // RightFlyWheel
+        hood = hardwareMap.get(ServoEx.class, "hood");
 
         voltageSensor = hardwareMap.get(VoltageSensor.class, "Control Hub");
 
-        fl1.setRunMode(Motor.RunMode.RawPower);
-        fl2.setRunMode(Motor.RunMode.RawPower);
-        fl1.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
-        fl2.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
+        fl1.setRunMode(MotorEx.RunMode.RawPower);
+        fl2.setRunMode(MotorEx.RunMode.RawPower);
+        fl1.setZeroPowerBehavior(MotorEx.ZeroPowerBehavior.FLOAT);
+        fl2.setZeroPowerBehavior(MotorEx.ZeroPowerBehavior.FLOAT);
 
         fl2.setInverted(true);
+        hood.setRange(0.30, 0.65);
+        hood.setPosition(0.30);
 
         feedforward = new SimpleMotorFeedforward(PIDFCoefficients.kS, PIDFCoefficients.kV);
         bangBangController = new BangBangController(ShooterConstant.TICKS_TOLERANCE); // 50 ticks tolerance
@@ -64,17 +72,23 @@ public class Shooter extends SubsystemBase {
         velocityLUT.add(135.6, 1740);
         velocityLUT.add(150.6, 1840);
 
-        hoodLUT.add(43.6, 0.3);
+        hoodLUT.add(43.6, 0.30);
+        hoodLUT.add(75.8, 0.40);
+        hoodLUT.add(102.6, 0.50);
+        hoodLUT.add(135.6, 0.60);
+        hoodLUT.add(150.6, 0.65);
         velocityLUT.createLUT();
         hoodLUT.createLUT();
     }
 
     @Override
     public void periodic() {
-        double target = calculatePower(distanceGoal);
+        double targetVel = calculateVelLUT(distanceGoal);
+        double targetHood = calculateHoodLUT(distanceGoal);
         switch (currentState) {
             case SPINS:
-                setFlyWheel(target);
+                setFlyWheel(targetVel);
+                hood.setPosition(targetHood);
                 isBusy = false;
                 break;
 
@@ -96,12 +110,11 @@ public class Shooter extends SubsystemBase {
                 targetPosition.getY(DistanceUnit.INCH) - currentPosition.getY(DistanceUnit.INCH));
     }
 
-
     private void setFlyWheel(double target) {
         double currentVoltage = voltageSensor.getVoltage();
 
-        double cV1 = fl1.getCorrectedVelocity();
-        double cV2 = fl2.getCorrectedVelocity();
+        double cV1 = fl1.getVelocity();
+        double cV2 = fl2.getVelocity();
 
         double feedForwardVolts = feedforward.calculate(target);
         double feedForwardPower = feedForwardVolts / currentVoltage;
@@ -126,18 +139,34 @@ public class Shooter extends SubsystemBase {
         power2 = Range.clip(power2, 0, ShooterConstant.MAX_POWER);
         fl1.set(power1);
         fl2.set(power2);
+
+        this.t = target;
     }
 
-    private double calculatePower(double distance) {
+    private double calculateVelLUT(double distance) {
         double d = MathUtils.clamp(distance,
                 ShooterConstant.MIN_CALIBRATED, ShooterConstant.MAX_CALIBRATED);
 
         return velocityLUT.get(d);
     }
 
+    private double calculateHoodLUT(double distance) {
+        double d = MathUtils.clamp(distance,
+                ShooterConstant.MIN_CALIBRATED, ShooterConstant.MAX_CALIBRATED);
+
+        return hoodLUT.get(d);
+    }
+
     public void setState(sState s) {
         currentState = s;
         isBusy = true;
+    }
+
+    public double targetVelocity() {
+        return t;
+    }
+    public double getVelocity() {
+        return fl1.getVelocity() + fl2.getVelocity() / 2.0;
     }
 
 }

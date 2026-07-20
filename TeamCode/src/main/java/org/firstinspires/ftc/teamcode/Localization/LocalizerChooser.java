@@ -16,8 +16,8 @@ import org.firstinspires.ftc.teamcode.Subsystem.Drive.TankDrive;
 
 public class LocalizerChooser {
 
-    public static Localizer create(HardwareMap hardwareMap, IMU imu, Pose2D startPose) {
-        imu = hardwareMap.get(IMU.class, RobotConstant.IMU_NAME);
+    public static Localizer create(HardwareMap hardwareMap, Pose2D startPose) {
+        IMU imu = hardwareMap.get(IMU.class, RobotConstant.IMU_NAME);
         imu.initialize(RobotConstant.IMU_PARAMETERS);
         imu.resetYaw();
 
@@ -49,7 +49,7 @@ public class LocalizerChooser {
 
             default:
                 throw new IllegalArgumentException(
-                    "Unsupported LocalizerType:  " + RobotConstant.DRIVE_TRAIN_TYPE
+                    "Unsupported LocalizerType:  " + RobotConstant.localizerType
                 );
         }
     }
